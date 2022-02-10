@@ -156,7 +156,7 @@
 
       //subsribe will call any listener functions when the state changes
       store.subscribe(() => {
-        console.log("The app state is now: ", store.getState());
+        // console.log("The app state is now: ", store.getState());
         const { goals, todos } = store.getState();
 
         document.getElementById("goals").innerHTML = "";
@@ -166,6 +166,8 @@
           addGoalToDOM(goal_item);
         });
         todos.forEach((todo_item) => {
+          // const todo_info = Object.keys(todo_item);
+          // console.log(`todos.forEach: todo_info-> ${todo_info}`);
           addTodoToDOM(todo_item);
         });
       });
