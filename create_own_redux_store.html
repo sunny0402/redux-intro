@@ -45,9 +45,9 @@
         const subscribe = (a_listen_fn) => {
           listeners.push(a_listen_fn);
           return () => {
-            listeners = listeners.filter((a_listener) => {
-              return a_listener !== a_listen_fn;
-            });
+            listeners = listeners.filter(
+              (a_listener) => a_listener !== a_listen_fn
+            );
           };
         };
 
@@ -165,14 +165,19 @@
         document.getElementById("goals").innerHTML = "";
         document.getElementById("todos").innerHTML = "";
 
-        goals &&
-          goals.forEach((goal_item) => {
-            return addGoalToDOM(goal_item);
-          });
-        todos &&
-          todos.forEach((todo_item) => {
-            return addTodoToDOM(todo_item);
-          });
+        if (goals.length > 0) {
+          for (let i = 0; i < goals.length; i++) {
+            console.log(`goals[i] ${goals[i]}`);
+            addGoalToDOM(goals[i]);
+          }
+        }
+
+        if (todos.length > 0) {
+          for (let i = 0; i < todos.length; i++) {
+            console.log(`todos[i] ${todos[i]}`);
+            addTodoToDOM(todos[i]);
+          }
+        }
       });
 
       //based on user input dispatch AddTodo or AddGoal
@@ -217,18 +222,38 @@
         .addEventListener("click", dispatchAddGoalFromUI);
 
       // now update DOM to reflect change in state
-      function addTodoToDOM(todo) {
-        console.log(`addTodoToDOM: todo.name ${todo.name} `);
 
+      function createRemoveButton(onClickFunction) {
+        const removeBtn = document.createElement("button");
+        removeBtn.innerHTML = "X";
+        removeBtn.addEventListener("click", onClickFunction);
+        return removeBtn;
+      }
+
+      function addTodoToDOM(todo) {
         if (todo) {
+          console.log(`addTodoToDOM: todo.name ${todo.name} `);
+
           const todo_list_item = document.createElement("li");
           const text = document.createTextNode(todo.name);
+
           todo_list_item.appendChild(text);
-          todo_list_item.style.color = todo.complete ? "green" : "red";
+
+          //DEBUG toggle
+          todo_list_item.style.textDecoration = todo.complete
+            ? "line-through"
+            : "none";
 
           todo_list_item.addEventListener("click", () => {
             store.dispatch(toggleTodoAction(todo.id));
           });
+          //end DEBUG
+
+          const removeBtn = createRemoveButton(() => {
+            store.dispatch(removeTodoAction(todo.id));
+          });
+
+          todo_list_item.appendChild(removeBtn);
 
           document.getElementById("todos").appendChild(todo_list_item);
         }
@@ -238,6 +263,15 @@
         const goal_list_item = document.createElement("li");
         const text = document.createTextNode(goal.name);
         goal_list_item.appendChild(text);
+
+        //DDEBUG
+        const removeGoalBtn = createRemoveButton(() => {
+          store.dispatch(removeGoalAction(goal.id));
+        });
+        //DDEBUG
+
+        goal_list_item.appendChild(removeGoalBtn);
+
         document.getElementById("goals").append(goal_list_item);
       }
     </script>
