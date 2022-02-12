@@ -156,20 +156,23 @@
 
       //subsribe will call any listener functions when the state changes
       store.subscribe(() => {
-        // console.log("The app state is now: ", store.getState());
         const { goals, todos } = store.getState();
+
+        console.log("The app state is now... ");
+        console.log(`todos: ${[...todos]}`);
+        console.log(`goals: ${[...goals]}`);
 
         document.getElementById("goals").innerHTML = "";
         document.getElementById("todos").innerHTML = "";
 
-        goals.forEach((goal_item) => {
-          addGoalToDOM(goal_item);
-        });
-        todos.forEach((todo_item) => {
-          // const todo_info = Object.keys(todo_item);
-          // console.log(`todos.forEach: todo_info-> ${todo_info}`);
-          addTodoToDOM(todo_item);
-        });
+        goals &&
+          goals.forEach((goal_item) => {
+            return addGoalToDOM(goal_item);
+          });
+        todos &&
+          todos.forEach((todo_item) => {
+            return addTodoToDOM(todo_item);
+          });
       });
 
       //based on user input dispatch AddTodo or AddGoal
@@ -177,7 +180,8 @@
         const input = document.getElementById("todo");
 
         const todo_name = input.value;
-        // console.log(`dispatchAddTodoFromUI(): todo_name: ${todo_name}`);
+        console.log(`btn click!`);
+        console.log(`dispatchAddTodoFromUI(): todo_name: ${todo_name}`);
 
         input.value = "";
 
@@ -214,20 +218,20 @@
 
       // now update DOM to reflect change in state
       function addTodoToDOM(todo) {
-        // console.log(`addTodoToDOM: todo.name ${todo.name} `);
-        // console.log(`addTodoToDOM: todo.complete ${todo.complete} `);
-        // console.log(`addTodoToDOM: todo.id ${todo.id} `);
+        console.log(`addTodoToDOM: todo.name ${todo.name} `);
 
-        const todo_list_item = document.createElement("li");
-        const text = document.createTextNode(todo.name);
-        todo_list_item.appendChild(text);
-        todo_list_item.style.color = todo.complete ? "green" : "red";
+        if (todo) {
+          const todo_list_item = document.createElement("li");
+          const text = document.createTextNode(todo.name);
+          todo_list_item.appendChild(text);
+          todo_list_item.style.color = todo.complete ? "green" : "red";
 
-        todo_list_item.addEventListener("click", () => {
-          store.dispatch(toggleTodoAction(todo.id));
-        });
+          todo_list_item.addEventListener("click", () => {
+            store.dispatch(toggleTodoAction(todo.id));
+          });
 
-        document.getElementById("todos").appendChild(todo_list_item);
+          document.getElementById("todos").appendChild(todo_list_item);
+        }
       }
 
       function addGoalToDOM(goal) {
