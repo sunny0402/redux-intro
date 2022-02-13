@@ -103,7 +103,7 @@
         };
       }
 
-      function removeGoalAction() {
+      function removeGoalAction(id) {
         return {
           type: REMOVE_GOAL,
           id,
@@ -119,12 +119,14 @@
           // return new state array
           return state.filter((todo) => todo.id !== action.id);
         } else if (action.type === TOGGLE_TODO) {
-          return state.map((todo) => {
-            todo.id !== action.id
-              ? todo
-              : // return new object with merge properties
-                Object.assign({}, todo, { complete: !todo.complete });
+          let toggled = state.map((todo) => {
+            if (todo.id !== action.id) {
+              return todo;
+            } else {
+              return Object.assign({}, todo, { complete: !todo.complete });
+            }
           });
+          return toggled;
         } else {
           // return original state if receive an action type we're not concerned with
           return state;
