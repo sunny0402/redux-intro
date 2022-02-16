@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<!-- https://github.com/udacity/reactnd-redux-todos-goals/commit/8b9fcbfa43d2fa8927e59fd2d0e61d6d0bb5737d -->
 <html>
   <head>
     <title>Udacity Todos Goals</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/3.7.2/redux.min.js"></script>
   </head>
+
   <body>
     <div>
       <h1>Todo List</h1>
@@ -39,30 +39,35 @@
           todo,
         };
       }
+
       function removeTodoAction(id) {
         return {
           type: REMOVE_TODO,
           id,
         };
       }
+
       function toggleTodoAction(id) {
         return {
           type: TOGGLE_TODO,
           id,
         };
       }
+
       function addGoalAction(goal) {
         return {
           type: ADD_GOAL,
           goal,
         };
       }
+
       function removeGoalAction(id) {
         return {
           type: REMOVE_GOAL,
           id,
         };
       }
+
       function todos(state = [], action) {
         switch (action.type) {
           case ADD_TODO:
@@ -73,12 +78,15 @@
             return state.map((todo) =>
               todo.id !== action.id
                 ? todo
-                : Object.assign({}, todo, { complete: !todo.complete })
+                : Object.assign({}, todo, {
+                    complete: !todo.complete,
+                  })
             );
           default:
             return state;
         }
       }
+
       function goals(state = [], action) {
         switch (action.type) {
           case ADD_GOAL:
@@ -90,8 +98,6 @@
         }
       }
 
-      //use Redux library now
-      //reducers have to be pure and can't mutate state directly. can concat, filer and map to return new state
       const store = Redux.createStore(
         Redux.combineReducers({
           todos,
@@ -101,10 +107,16 @@
 
       store.subscribe(() => {
         const { goals, todos } = store.getState();
+
         document.getElementById("goals").innerHTML = "";
         document.getElementById("todos").innerHTML = "";
-        goals.forEach(addGoalToDOM);
-        todos.forEach(addTodoToDOM);
+
+        goals.forEach((a_goal) => {
+          return addGoalToDOM(a_goal);
+        });
+        todos.forEach((a_todo) => {
+          return addTodoToDOM(a_todo);
+        });
       });
 
       // DOM code
@@ -112,6 +124,7 @@
         const input = document.getElementById("todo");
         const name = input.value;
         input.value = "";
+
         store.dispatch(
           addTodoAction({
             name,
@@ -120,10 +133,12 @@
           })
         );
       }
+
       function addGoal() {
         const input = document.getElementById("goal");
         const name = input.value;
         input.value = "";
+
         store.dispatch(
           addGoalAction({
             id: generateId(),
@@ -131,7 +146,9 @@
           })
         );
       }
+
       document.getElementById("todoBtn").addEventListener("click", addTodo);
+
       document.getElementById("goalBtn").addEventListener("click", addGoal);
 
       function createRemoveButton(onClick) {
@@ -155,8 +172,10 @@
         node.addEventListener("click", () => {
           store.dispatch(toggleTodoAction(todo.id));
         });
+
         document.getElementById("todos").appendChild(node);
       }
+
       function addGoalToDOM(goal) {
         const node = document.createElement("li");
         const text = document.createTextNode(goal.name);
