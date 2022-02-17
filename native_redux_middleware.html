@@ -146,51 +146,50 @@
         }
       }
 
-      //add some middleware
-      // checkAndDispatch -> store.dispatch -> reducer
-      // an action must be dispatched to the reducer for it to change state
-      //middleware typically between dispatch of an action and reducer running
-      function checkAndDispatch(store, action) {
-        if (
-          action.type === ADD_TODO &&
-          action.todo.name.toLowerCase().includes("bitcoin")
-        ) {
-          return alert("No bitcoin.");
-        }
+      //add native redux middleware
+      function checker(store) {
+        return function (next) {
+          return function (action) {
+            if (
+              action.type === ADD_TODO &&
+              action.todo.name.toLowerCase().includes("bitcoin")
+            ) {
+              return alert("No bitcoin.");
+            }
 
-        if (
-          action.type === ADD_GOAL &&
-          action.goal.name.toLowerCase().includes("bitcoin")
-        ) {
-          return alert("No bitcoin.");
-        }
-        return store.dispatch(action);
+            if (
+              action.type === ADD_GOAL &&
+              action.goal.name.toLowerCase().includes("bitcoin")
+            ) {
+              return alert("No bitcoin.");
+            }
+            // next will call the next middleware if we have one or dispatch function
+            return next(action);
+          };
+        };
       }
 
-      //use redux library instead
-      const store = Redux.createStore(Redux.combineReducers({ todos, goals }));
+      //const store = Redux.createStore( <reducer-function>, <middleware-functions> )
+      const store = Redux.createStore(
+        Redux.combineReducers({ todos, goals }),
+        Redux.applyMiddleware(checker)
+      );
 
       //subsribe will call any listener functions when the state changes
       store.subscribe(() => {
         const { goals, todos } = store.getState();
-
-        console.log("The app state is now... ");
-        console.log(`todos: ${[...todos]}`);
-        console.log(`goals: ${[...goals]}`);
 
         document.getElementById("goals").innerHTML = "";
         document.getElementById("todos").innerHTML = "";
 
         if (goals.length > 0) {
           for (let i = 0; i < goals.length; i++) {
-            console.log(`goals[i] ${goals[i]}`);
             addGoalToDOM(goals[i]);
           }
         }
 
         if (todos.length > 0) {
           for (let i = 0; i < todos.length; i++) {
-            console.log(`todos[i] ${todos[i]}`);
             addTodoToDOM(todos[i]);
           }
         }
@@ -203,8 +202,7 @@
         const todo_name = input.value;
         input.value = "";
 
-        checkAndDispatch(
-          store,
+        store.dispatch(
           addTodoAction({
             name: todo_name,
             complete: false,
@@ -218,8 +216,7 @@
         const goal_name = input.value;
         input.value = "";
 
-        checkAndDispatch(
-          store,
+        store.dispatch(
           addGoalAction({
             name: goal_name,
             complete: false,
@@ -248,17 +245,8 @@
 
       function addTodoToDOM(todo) {
         if (todo) {
-          console.log(`addTodoToDOM: todo.name ${todo.name} `);
-
           const todo_list_item = document.createElement("li");
           const text = document.createTextNode(todo.name);
-
-          console.log(
-            "typeof todo_list_item, typeof text)",
-            typeof todo_list_item,
-            "|",
-            typeof text
-          );
 
           todo_list_item.appendChild(text);
 
@@ -268,15 +256,13 @@
             : "none";
 
           todo_list_item.addEventListener("click", () => {
-            checkAndDispatch(store, toggleTodoAction(todo.id));
+            store.dispatch(toggleTodoAction(todo.id));
           });
           //end DEBUG
 
           const removeBtn = createRemoveButton(() => {
             store.dispatch(removeTodoAction(todo.id));
           });
-
-          console.log("typeof removeBtn", typeof removeBtn); //object
 
           todo_list_item.appendChild(removeBtn);
 
@@ -291,7 +277,7 @@
 
         //DDEBUG
         const removeGoalBtn = createRemoveButton(() => {
-          checkAndDispatch(store, removeGoalAction(goal.id));
+          store.dispatch(removeGoalAction(goal.id));
         });
         //DDEBUG
 
