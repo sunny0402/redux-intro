@@ -147,6 +147,7 @@
       }
 
       //add native redux middleware
+      //   again, middleware goes between dispatching an action and having the action reach the reducer
       function checker(store) {
         return function (next) {
           return function (action) {
@@ -169,10 +170,19 @@
         };
       }
 
+      //create a logger middleware
+      const logger = (store) => (next) => (action) => {
+        console.group(action.type);
+        console.log("The action is: ", action);
+        const result = next(action);
+        console.log("The new state is: ", store.getState());
+        console.groupEnd();
+        return result;
+      };
       //const store = Redux.createStore( <reducer-function>, <middleware-functions> )
       const store = Redux.createStore(
         Redux.combineReducers({ todos, goals }),
-        Redux.applyMiddleware(checker)
+        Redux.applyMiddleware(checker, logger)
       );
 
       //subsribe will call any listener functions when the state changes
