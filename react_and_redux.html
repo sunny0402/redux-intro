@@ -14,19 +14,20 @@
   <body>
     <body>
         <div>
-          <h1>Todo List</h1>
+          <h1>Todo List Vanilla JS</h1>
           <input id='todo' type='text' placeholder='Add Todo' />
           <button id='todoBtn'>Add Todo</button>
           <ul id='todos'></ul>
         </div>
         <div>
-          <h1>Goals</h1>
+          <h1>Goals Vanilla JS</h1>
           <input id='goal' type='text' placeholder='Add Goal' />
           <button id='goalBtn'>Add Goal</button>
           <ul id='goals'></ul>
         </div>
 
         <hr>
+        <h1>React version Todo/Goal List</h1>
 
         <div id="app"></div>
         <script type='text/javascript'>
@@ -191,7 +192,12 @@
                         {props.items.map((item)=>{
                             return (
                             <li key={item.id}>
-                                <span>{item.name}</span>
+                                <span
+                                onClick={()=>props.toggle && props.toggle(item.id)}
+                                style={{textDecoration: item.complete ? 'line-through' : 'none'}}
+                                >
+                                    {item.name}    
+                                </span>
                                 <button onClick={()=>props.remove(item)}>
                                     remove
                                     </button>
@@ -220,6 +226,10 @@
                   removeItem = (todo)=>{
                         this.props.store.dispatch(removeTodoAction(todo.id));
                       };
+                    
+                    toggleItem = (id)=>{
+                        this.props.store.dispatch(toggleTodoAction(id));
+                    }
                   render(){
                       return(
                         <div>
@@ -230,6 +240,7 @@
                         />
                         <button onClick={this.addItem}>Add Todo</button>
                         <List
+                        toggle={this.toggleItem}
                         items={this.props.todos}
                         remove={this.removeItem}
                         />     
