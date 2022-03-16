@@ -181,24 +181,37 @@
               class Todos extends React.Component{
 
                   addItem = (event) =>{
-                      event.preventDefault();
-                      const name = this.input.value;
-                      this.input.value = "";
-                    
-                      //React component is passed the Redux store as a prop
-                      this.props.store.dispatch(addTodoAction({
-                          name,
-                          complete: false,
-                          id: generateId(),
-                      }));
+                    event.preventDefault();
+                    return API.saveTodo(this.input.value).then(
+                      (todo)=>{
+                        this.props.store.dispatch(addTodoAction(todo));
+                        this.input.value = "";
+                      }
+                    ).catch(()=>{
+                      alert(`Error adding todo item. 
+                      No optimisitc update for adding todo item. 
+                      Would also have to remove todo on error if this was an optimistic update.
+                      Here on error just run alert.`)
+                    })
                   }
-
+                  
+                  //update store and backend
                   removeItem = (todo)=>{
                         this.props.store.dispatch(removeTodoAction(todo.id));
+
+                        return API.deleteTodo(todo.id).catch(()=>{
+                          this.props.store.dispatch(addTodoAction(todo))
+                          alert('Optimistic delete failed! Added back todo item.')
+                        })
                       };
                     
                     toggleItem = (id)=>{
                         this.props.store.dispatch(toggleTodoAction(id));
+
+                        return API.saveTodoToggle(id).catch(()=>{
+                          this.props.store.dispatch(toggleTodoAction(id))
+                          alert('Optimistic toggle failed! Un-toggle todo item.')
+                        })
                     }
                   render(){
                       return(
@@ -223,18 +236,29 @@
               class Goals extends React.Component{
                 addItem = (event) =>{
                       event.preventDefault();
-                      const name = this.input.value;
+                      
+                      return API.saveGoal(this.input.value).then((goal)=>{
+                      this.props.store.dispatch(addGoalAction(goal));
                       this.input.value = "";
-                    
-                      //React component is passed the Redux store as a prop
-                      this.props.store.dispatch(addGoalAction({
-                          id: generateId(),
-                          name,
-                      }));
+                      }).catch(()=>{
+                        alert(`Error adding todo item. 
+                      No optimisitc update for adding goal item. 
+                      Would also have to remove goal on error if this was an optimistic update.
+                      Here on error just run alert.`)
+                      }
+                  
+                      )    
                   }
 
                   removeItem = (goal)=>{
                         this.props.store.dispatch(removeGoalAction(goal.id));
+
+                        return API.deleteGoal(goal.id).catch(
+                          ()=>{
+                            this.props.store.dispatch(addGoalAction(goal))
+                            alert('Optimistic delete failed! Added back goal item.')
+                          }
+                        )
                       };
 
                   render(){
