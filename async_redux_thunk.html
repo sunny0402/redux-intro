@@ -12,6 +12,11 @@
     <script src='https://unpkg.com/babel-standalone@6.15.0/babel.min.js'></script>
     <!-- gives access to API -->
     <script src='https://tylermcginnis.com/goals-todos-api/index.js'></script>
+    <!-- thunk middleware -->
+    <script src='https://unpkg.com/redux-thunk@2.2.0/dist/redux-thunk.min.js'></script>
+    <!-- Thunk is a wrapper for dispatch method of a Redux store.
+         Since action creators return objects, Thunk is a middleware which allows 
+         to dispatch functions, promises.  -->
   </head>
   <body>
     <body>
@@ -76,6 +81,69 @@
                 type: RECEIVE_DATA,
                 todos,
                 goals
+              }
+            }
+
+            function handleAddTodo(todo_name, callback_fn){
+              return (dispatch)=>{
+                return API.saveTodo(todo_name).then(
+                  (todo)=>{
+                    dispatch(addTodoAction(todo));
+                    callback_fn();
+                  }
+                ).catch(()=>{
+                  alert("There was an error adding the todo item.")
+                })
+              }
+            }
+
+            function handleDeleteTodo(todo){
+              return (dispatch)=>{
+                dispatch(removeTodoAction(todo.id))
+              }
+
+              return API.deleteTodo(todo.id).catch(()=>{
+                dispatch(addTodoAction(todo))
+                alert("An error occurred. Try again.")
+              })
+            }
+
+            function handleToggle(id){
+              return (dispatch)=>{
+                dispatch(toggleTodoAction(id))
+              
+              return API.saveTodoToggle(id)
+              .catch(
+                ()=>{ //on error un toggle
+                  dispatch(toggleTodoAction(id));
+                  alert("An error occurred. Try again.")
+                }
+              )
+              }
+            }
+
+            //make API request to save goal in database
+            //dispatch action creator to update store
+            function handleAddGoal(goal_name,callback_fn){
+              return (dispatch)=>{
+                return API.saveGoal(goal_name).then(
+                  (goal)=>{
+                    dispatch(addGoalAction(goal));
+                    callback_fn();// ()=>this.input.value='' ... reset input field
+                  }
+                ).catch(()=>alert("Errod adding goal"))
+              }
+            }
+
+            function handleDeleteGoal(goal){
+              return (dispatch)=>{
+                dispatch(removeGoalAction(goal.id));
+
+                return API.deleteGoal(goal.id)
+                .catch(()=>{//on error add goal back to store
+                  dispatch(addGoalAction(goal));
+                  alert("Error deleting goal. Goal has been added back.");
+                })
               }
             }
             
@@ -149,7 +217,7 @@
               todos,
               goals,
               loading
-            }), Redux.applyMiddleware(checker, logger))
+            }), Redux.applyMiddleware(ReduxThunk.default,checker, logger))
 
           </script>
 
@@ -180,7 +248,14 @@
               class Todos extends React.Component{
                   addItem = (event) =>{
                     event.preventDefault();
-                    return API.saveTodo(this.input.value).then(
+
+                    this.props.store.dispatch(handleAddTodo(
+                      this.input.value,
+                      ()=>this.input.value = ""));
+                    
+                    //this logic was moved to handleAddTodo()
+                    /*
+                      return API.saveTodo(this.input.value).then(
                       (todo)=>{
                         this.props.store.dispatch(addTodoAction(todo));
                         this.input.value = "";
@@ -191,26 +266,18 @@
                       Would also have to remove todo on error if this was an optimistic update.
                       Here on error just run alert.`)
                     })
+                    **/
                   }
                   
                   //update store and backend
                   removeItem = (todo)=>{
-                        this.props.store.dispatch(removeTodoAction(todo.id));
-                        
-                        return API.deleteTodo(todo.id).catch(()=>{
-                          this.props.store.dispatch(addTodoAction(todo))
-                          alert('Optimistic delete failed! Added back todo item.')
-                        })
+                        this.props.store.dispatch(handleDeleteTodo(todo))
                       };
                     
-                    toggleItem = (id)=>{
-                        this.props.store.dispatch(toggleTodoAction(id));
-
-                        return API.saveTodoToggle(id).catch(()=>{
-                          this.props.store.dispatch(toggleTodoAction(id))
-                          alert('Optimistic toggle failed! Un-toggle todo item.')
-                        })
+                  toggleItem = (id)=>{
+                        this.props.store.dispatch(handleToggle(id));
                     }
+                  
                   render(){
                       return(
                         <div>
@@ -235,28 +302,12 @@
                 addItem = (event) =>{
                       event.preventDefault();
                       
-                      return API.saveGoal(this.input.value).then((goal)=>{
-                      this.props.store.dispatch(addGoalAction(goal));
-                      this.input.value = "";
-                      }).catch(()=>{
-                        alert(`Error adding todo item. 
-                      No optimisitc update for adding goal item. 
-                      Would also have to remove goal on error if this was an optimistic update.
-                      Here on error just run alert.`)
-                      }
-                  
-                      )    
+                  this.props.store.dispatch(handleAddGoal(this.input.value,
+                  ()=>this.input.value=''));
                   }
 
                   removeItem = (goal)=>{
-                        this.props.store.dispatch(removeGoalAction(goal.id));
-
-                        return API.deleteGoal(goal.id).catch(
-                          ()=>{
-                            this.props.store.dispatch(addGoalAction(goal))
-                            alert('Optimistic delete failed! Added back goal item.')
-                          }
-                        )
+                      this.props.store.dispatch(handleDeleteGoal(goal));
                       };
 
                   render(){
