@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>React Props</title>
+    <!-- add babel react react-dom -->
+    <script src='https://unpkg.com/react@16.3.0-alpha.1/umd/react.development.js'></script>
+    <script src='https://unpkg.com/react-dom@16.3.0-alpha.1/umd/react-dom.development.js'></script>
+    <script src='https://unpkg.com/babel-standalone@6.15.0/babel.min.js'></script>
+
+
+<body>
+
+    <body>
+        <h1>Passing Props Between React Components</h1>
+
+        <div id="app"></div>
+        <script type='text/javascript'>
+            console.log("JavaScript!.")
+        </script>
+
+
+        <script type="text/babel">
+
+            function Parent({ name }) {
+                return (
+                    <div>
+                        <h1>Parent</h1>
+                        <Child name={name} />
+                    </div>
+                );
+            }
+
+            function Child({ name }) {
+                return (
+                    <div>
+                        <h1>Child</h1>
+                        <Grandchild name={name} />
+                    </div>
+                );
+            }
+
+            function Grandchild({ name }) {
+                return (
+                    <div>
+                        <h1>Grandchild</h1>
+                        <h3>Name: {name}</h3>
+                    </div>
+                );
+            }
+
+            class App extends React.Component {
+                render() {
+                    const name = 'Alex';
+
+                    return (
+                        <Parent name={name} />
+                    );
+                }
+            }
+
+            ReactDOM.render(<App />, document.getElementById("app"));
+
+        </script>
+    </body>
+</html>
