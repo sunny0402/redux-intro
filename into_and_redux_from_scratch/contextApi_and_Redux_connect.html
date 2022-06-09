@@ -25,7 +25,11 @@
     <body>
         <h1>react-redux</h1>
         <p>
-            implementation of:
+            - Know when the store changes: store.subscribe
+            - What state is needed: mapStateToProps
+            - get store from Context
+
+            Implements:
             https://github.com/reduxjs/react-redux
         </p>
         <br>
@@ -297,26 +301,26 @@
                 }
             }
 
-            class ConnectedTodos extends React.Component {
-                render() {
-                    return (
-                        <Context.Consumer>
-                            {
-                                (store) => {
-                                    const { todos } = store.getState();
-                                    return <Todos todos={todos} dispatch={store.dispatch} />
-                                }
-                            }
-                        </Context.Consumer>
+            // class ConnectedTodos extends React.Component {
+            //     render() {
+            //         return (
+            //             <Context.Consumer>
+            //                 {
+            //                     (store) => {
+            //                         const { todos } = store.getState();
+            //                         return <Todos todos={todos} dispatch={store.dispatch} />
+            //                     }
+            //                 }
+            //             </Context.Consumer>
 
-                    );
-                }
-            }
+            //         );
+            //     }
+            // }
 
             //instead of above ConnectedTodos class
-            // const ConnectedTodos = connect((state) => ({
-            //     todos: state.todos
-            // }))(Todos)
+            const ConnectedTodos = connect((state) => ({
+                todos: state.todos
+            }))(Todos)
 
 
             class Goals extends React.Component {
@@ -353,32 +357,31 @@
                 }
             }
 
-            class ConnectedGoals extends React.Component {
-                render() {
-                    return (
-                        <Context.Consumer>
-                            {
-                                (store) => {
-                                    const { goals } = store.getState();
-                                    return <Goals goals={goals} dispatch={store.dispatch} />
-                                }
-                            }
-                        </Context.Consumer>
-                    );
-                }
-            }
+            // class ConnectedGoals extends React.Component {
+            //     render() {
+            //         return (
+            //             <Context.Consumer>
+            //                 {
+            //                     (store) => {
+            //                         const { goals } = store.getState();
+            //                         return <Goals goals={goals} dispatch={store.dispatch} />
+            //                     }
+            //                 }
+            //             </Context.Consumer>
+            //         );
+            //     }
+            // }
 
             //instead of ConnectedGoals class
-            // const ConnectedGoals = connect((state) => ({
-            //     goals: state.goals
-            // }))(Goals)
+            const ConnectedGoals = connect((state) => ({
+                goals: state.goals
+            }))(Goals)
 
 
             class App extends React.Component {
                 componentDidMount() {
                     const { store } = this.props;
-                    //instead of setState which updates state and causes a re-render
-                    store.dispatch(handleInitialData());
+                    dispatch(handleInitialData());
 
                     store.subscribe(() => this.forceUpdate());
                 }
@@ -386,7 +389,7 @@
                     const { store } = this.props;
                     const { loading } = store.getState();
 
-                    if (loading === true) {
+                    if (this.props.loading === true) {
                         return <h3>Loading...</h3>
                     }
 
@@ -411,24 +414,66 @@
             // </App>
 
 
-            class ConnectedApp extends React.Component {
-                render() {
-                    return (
-                        <Context.Consumer>
-                            {(store) => (
-                                <App store={store} />
-                            )}
-                        </ Context.Consumer>
+            // class ConnectedApp extends React.Component {
+            //     render() {
+            //         return (
+            //             <Context.Consumer>
+            //                 {(store) => (
+            //                     <App store={store} />
+            //                 )}
+            //             </ Context.Consumer>
 
-                    );
+            //         );
 
+            //     }
+            // }
+
+            //Note: missing in course content 
+            //view comments: https://github.com/udacity/reactnd-redux-todos-goals/commit/a759364886753f1baf9cba1d2a7f21378740f3b7
+            //Note: connect is a higher order component
+            //responsible for rendering a component and passing any data that it needs from redux store
+            function connect(mapStateToProps) {
+                return (Component) => {
+                    class Receiver extends React.Component {
+                        componentDidMount() {
+                            const { subscribe } = this.props.store
+                            this.unsubscribe = subscribe(() => {
+                                this.forceUpdate()
+                            })
+                        }
+                        componentWillUnmount() {
+                            this.unsubscribe()
+                        }
+                        render() {
+                            const { dispatch, getState } = this.props.store
+                            const state = getState()
+                            // stateNeeded is an object where each property is a prop of the Component
+                            // eg for App it will be { loading: true/false }
+                            const stateNeeded = mapStateToProps(state)
+                            return <Component {...stateNeeded} dispatch={dispatch} />
+                        }
+                    }
+                    class ConnectedComponent extends React.Component {
+                        render() {
+                            return (
+                                <Context.Consumer>
+                                    {(store) => <Receiver store={store} />}
+                                </Context.Consumer>
+                            )
+                        }
+                    }
+                    return ConnectedComponent
                 }
             }
+
+            const ConnectedApp = connect((state) => ({
+                loading: state.loading
+            }))(App)
 
             //Note: Context object has both a provider and consumer property.
             const Context = React.createContext();
 
-            //Note: Give access to the store for entire app.
+            //Note: Give access to the store for entire app by using Context.Provider.
             class Provider extends React.Component {
                 render() {
                     return (
